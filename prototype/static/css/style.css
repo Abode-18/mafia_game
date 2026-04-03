@@ -1,0 +1,70 @@
+
+.btns {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+}
+
+.join{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+
+.name-input{
+    justify-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+#error-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 0, 0, 0.6);
+    color: white;
+    text-align: center;
+    padding: 12px;
+    font-family: sans-serif;
+    font-weight: bold;
+    z-index: 2147483647; /* maximum z-index to ensure it is above everything */
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+}
+
+#error-bar.show {
+    transform: translateY(0);
+}
+
+
+
+
+#success-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(1, 170, 1, 0.6);
+    color: white;
+    text-align: center;
+    padding: 12px;
+    font-family: sans-serif;
+    font-weight: bold;
+    z-index: 2147483647; /* maximum z-index to ensure it is above everything */
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+}
+
+#success-bar.show {
+    transform: translateY(0);
+}

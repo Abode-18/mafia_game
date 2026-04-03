@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="success-bar"></div>
+<div id="error-bar" >Something went wrong</div>
+<h2>Room {{room}}</h2>
+
+<div class="players">
+    <ul>
+
+    </ul>
+</div>
+
+<script type="text/javascript">
+    const messages = document.getElementById("#messages");
+    const sockit = io();
+    sockit.emit("room-page-joined",{"player_id":localStorage.getItem("player_id")})
+    const player_id = localStorage.getItem("player_id")
+
+    const showPlayer = (players) =>{
+        const ul = document.querySelector(".players ul");
+        ul.innerHTML = "";
+        for (player of players){
+            let li = document.createElement("li");
+            li.textContent = player;
+            ul.appendChild(li);
+        }
+
+    }
+
+    function showError(message){
+    const bar = document.getElementById("error-bar");
+    bar.textContent = message;
+    bar.classList.add("show");
+
+    setTimeout(()=>{
+        bar.classList.remove("show");
+    },10000);
+}
+
+    function showSuccess(message){
+    const bar = document.getElementById("success-bar");
+    bar.textContent = message;
+    bar.classList.add("show");
+
+    setTimeout(()=>{
+        bar.classList.remove("show");
+    },10000);
+}
+    
+    sockit.on("success",(data) =>{
+        showSuccess(data.message)
+    });
+    sockit.on("player-joined",(data) =>{
+        console.log("player joined")
+        showPlayer(data.players)
+    });
+
+    
+</script>
+{% endblock content %}
+
