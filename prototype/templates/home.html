@@ -33,7 +33,14 @@
       player_id = generateUUID()
       localStorage.setItem("player_id", player_id);
    }
-
+   set_identity()
+   async function set_identity() {
+         await fetch ('/set_identity' , {
+         method : 'POST',
+         headers: {'Content-Type': 'application/json'},
+         body: JSON.stringify({ 'player_id': player_id })
+   })  
+   };
 
    function showError(message){
       const bar = document.getElementById("error-bar");
@@ -45,18 +52,13 @@
       },10000);
    };
 
-   async function CreateRoom() {
+   const CreateRoom = () => {
       const ul = document.getElementById("error");
       ul.innerHTML = "";
       if (name.value.trim() === ""){
          showError("plaese enter a name")
          return;
       };
-      await fetch ('/set_identity' , {
-         method : 'POST',
-         headers: {'Content-Type': 'application/json'},
-         body: JSON.stringify({ 'player_id': player_id })
-      })
 
       sockit.emit("create-room", {
          "player_id":player_id,
@@ -67,7 +69,7 @@
       console.log("success")
       window.location.href = data.url; // redirect
    });
-   async function JoinRoom() {
+   const JoinRoom = () => {
       const ul = document.getElementById("error");
       ul.innerHTML = "";
       const room = document.getElementById("room");
@@ -79,11 +81,7 @@
             showError("plaese enter a room code");
             return;
       };
-      await fetch ('/set_identity' , {
-         method : 'POST',
-         headers: {'Content-Type': 'application/json'},
-         body: JSON.stringify({ 'player_id': player_id })
-      })
+      
 
 
       sockit.emit("join-room", {
@@ -91,10 +89,6 @@
          "name":name.value,
          "room":room.value
       });
-      // sockit.on("room_joined", (data) => {
-      //    console.log(`joining room ${data.url}`)
-      //    // window.location.href = data.url; // redirect
-      // });
 
       sockit.on("error", (data) => {
          showError(data.message);

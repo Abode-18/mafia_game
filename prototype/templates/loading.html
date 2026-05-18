@@ -1,0 +1,30 @@
+<script>
+    let player_id = localStorage.getItem("player_id");
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+   });
+}
+
+   if (!player_id) {
+      player_id = generateUUID()
+      localStorage.setItem("player_id", player_id);
+   }
+
+
+   async function set_identity() {
+         await fetch ('/set_identity' , {
+         method : 'POST',
+         headers: {'Content-Type': 'application/json'},
+         body: JSON.stringify({ 'player_id': player_id })
+   });
+   window.location.replace("/");
+   };
+   set_identity()
+</script>
+
+<body>
+    <h1>LOADING ...</h1>
+</body>

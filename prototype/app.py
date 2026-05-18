@@ -46,7 +46,20 @@ def generate_room(lenth = 4):
 
 @app.route("/" ,methods = ["GET","POST"])
 def index():
+    p_id = session.get("player_id")
+    if not p_id :
+        return render_template("loading.html")
+    if p_id not in players_data:
+        players_data[p_id] = {'name':None,'room':None}
+        return render_template("home.html")
+    player_d = players_data[p_id]
+
+    if player_d.get("room"):
+        return redirect(url_for("room",room = player_d.get("room")))
+    if player_d.get("name"):
+        return render_template("home.html",name = player_d.get("name",'Guest'))
     return render_template("home.html")
+
 
 
 @app.route("/set_identity", methods=["POST"])
@@ -69,20 +82,15 @@ def create_room(data:dict):
     rooms[room]["host"] = player_id
     players: dict[str, Player] = {player_id: Player(player_id=player_id,player_name=name, player_type=None)}
     rooms[room]["players"] = players
-    # debug(f"{name} created the room {room}")
     emit("room_joined", {"url": url_for("room", room=room)})
 
 @app.route("/room/<room>",methods=["GET","POST"])
 def room(room):
     player_id = session.get("player_id")
-    # if request.method == "POST":
-    #     player_id = request.get_json().get("player_id")
-    #     return jsonify({"status": "success", "message": f"Hello {players_data.get(player_id)}!"})
-    debug(f"After: {session.get('player_id')}")
     name = players_data.get(player_id,{}).get("name")
-    # debug(name)
     if room not in rooms:return redirect(url_for("index"))
     if not players_data.get(player_id):return redirect(url_for("index",name=name))
+    debug(rooms[room])
     return render_template("room.html",room = room)
 
 
