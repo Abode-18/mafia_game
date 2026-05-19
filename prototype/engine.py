@@ -1,5 +1,5 @@
 from models import Player, Move
-
+import random
 class GameState:
     def __init__(self,players:dict[str,Player]):
         self.players:dict[str,Player] = {p.id:p for p in players.values()}
@@ -7,6 +7,23 @@ class GameState:
         self.moves = {}
         self.number_of_citizense = len([p.id for p in players.values() if p.type == "citizense"])
 
+    def choose_type(self):
+        Players = self.players
+        num_of_players = len(Players)
+        types = ["mafia","doctor","citizen"]
+        record = {"mafia":0,"doctor":0,"citizen":0}
+        for player in Players.values():
+            player.type = random.choice(types)
+            record[player.type] += 1
+            if record["mafia"] >= 2:
+                if "mafia" in types:
+                    types.remove("mafia")
+            if record["doctor"] >= 1:
+                if "doctor" in types:
+                    types.remove("doctor")
+        self.players = Players
+        return 
+    
     def submit_move(self,move:Move):
         if not(move.target in [p for p in self.players.keys()]):
             return f"{move.target} is dead",0

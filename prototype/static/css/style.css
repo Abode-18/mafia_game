@@ -1,4 +1,6 @@
-
+.body{
+    display: flex;
+}
 .btns {
     display: flex;
     flex-direction: column;
@@ -67,4 +69,12 @@
 
 #success-bar.show {
     transform: translateY(0);
+}
+
+.start_game{
+    text-align: center;
+    height: 30px;
+    width: 20%;
+    border: 1px solid black;
+
 }
