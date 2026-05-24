@@ -21,8 +21,7 @@
 <script type="text/javascript">
     const messages = document.getElementById("#messages");
     const sockit = io();
-    sockit.emit("room-page-joined",{"player_id":localStorage.getItem("player_id")})
-    const player_id = localStorage.getItem("player_id")
+    sockit.emit("room-page-joined")
 
     const showPlayer = (players) =>{
         const ul = document.querySelector(".players ul");
@@ -59,6 +58,12 @@
         bar.classList.remove("show");
     },10000);
 }
+
+    sockit.on("player_id",(data) =>{
+        let player_id = data.data
+    })
+
+
     sockit.on("error",(data) =>{
         showError(data.message)
     })

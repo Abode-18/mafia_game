@@ -1,6 +1,7 @@
 from flask import Flask , render_template , url_for,request,redirect,session,jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from string import ascii_uppercase
+import uuid
 import random
 from models import Player,Move
 from engine import GameState
@@ -27,28 +28,33 @@ def generate_room(lenth = 4):
             continue
         return room
     
-
+def set_identity():
+    if not session.get("player_id"):
+        while True:
+            player_id = str(uuid.uuid4())
+            if not player_id in players_data:
+                break
+        session["player_id"] = player_id
+        session.permanent = True
+        players_data[player_id] = {
+            "player": Player(player_id, None, None),
+            "room": None
+        }
+        debug(players_data)
+    if not session.get("player_id") in players_data:
+        session.clear()
+        set_identity()
+    return session.get("player_id")
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    set_identity()
     p_id = session.get("player_id")
 
 
 
     room = request.args.get("room")
     #here
-    if not p_id:
-        if room:
-            return render_template("loading.html",room=room)
-        else:
-            return render_template("loading.html")
-
-
-    if p_id not in players_data:
-        players_data[p_id] = {
-            "player": Player(p_id, None, None),
-            "room": None
-        }
 
     player_data = players_data[p_id]
     player = player_data["player"]
@@ -80,19 +86,19 @@ def index():
 
 
 
-@app.route("/set_identity", methods=["POST"])
-def set_identity():
-    data = request.get_json()
-    player_id = data.get("player_id")
-    if player_id in players_data:
-        pass
-    session["player_id"] = player_id
-    session.permanent = True 
-    return '', 204
+# @app.route("/set_identity", methods=["POST"])
+# def set_identity():
+#     data = request.get_json()
+#     player_id = data.get("player_id")
+#     if player_id in players_data:
+#         pass
+#     session["player_id"] = player_id
+#     session.permanent = True 
+#     return '', 204
 
 @socketio.on("create-room")
 def create_room(data:dict):
-    player_id = data.get("player_id")
+    player_id = set_identity()
     name=data.get("name")
     room = generate_room()
     players_data[player_id]["player"].name = name
@@ -110,7 +116,7 @@ def create_room(data:dict):
 
 @socketio.on("join-room")
 def handle_join_room(data):
-    player_id = data.get("player_id")
+    player_id = set_identity()
     name = data.get("name")
     room = data.get("room")
     if not room in rooms:
@@ -128,12 +134,15 @@ def handle_join_room(data):
 
 @app.route("/room/<room>",methods=["GET","POST"])
 def room(room):
-    player_id = session.get("player_id")
+    player_id = set_identity()
     #cheacking that the player exist in player_data
     if not players_data.get(player_id):
         return redirect(url_for("index",room=room))
 
     if room not in rooms:
+        return redirect(url_for("index"))
+    elif rooms[room].get("status") == "started" and player_id not in rooms[room]["players"].keys():
+        # emit("error",{"message":"the room has already started"})
         return redirect(url_for("index"))
     if players_data[player_id]["room"] != room:
         #edit in the future
@@ -156,31 +165,32 @@ def room(room):
 
 
 @socketio.on("room-page-joined")
-def success_messages(data:dict):
-    session["id"] = data.get("player_id")
-    room = players_data.get(data.get("player_id")).get("room")
-    is_host = rooms[room].get("host") == session.get("id")
+def success_messages():
+    player_id = set_identity()
+    room = players_data.get(player_id).get("room")
+    is_host = rooms[room].get("host") == player_id
     if rooms[room].get("status") == "started":
-        socketio.emit("started",{"type":players_data[session.get("id")]["player"].type})
+        socketio.emit("started",{"type":players_data[player_id]["player"].type})
         return
     join_room(room) 
     emit("success",{"message":f"you have joined the room: {room} successfully."})
     # debug(rooms)
     # debug(f"players:\n{[rooms[room]["players"][id].name for id in rooms[room]["players"].keys()]}")
+    emit("player_id",{"data":player_id})
     emit("player-joined",{"players":[rooms[room]["players"][id].name for id in rooms[room]["players"].keys()]},to=room)
 
 
 @socketio.on("Start_game")
 def Start_game():
-    room = players_data.get(session.get("id")).get("room")
-
+    player_id = session.get("player_id")
+    room = players_data.get(player_id).get("room")
     if len(rooms[room]["players"]) <1:
         socketio.emit("error",{"message":"the number of players must be more then 4 players"})
         return
 
     rooms[room]["game"] = GameState(rooms[room]["players"])
     rooms[room]["game"].choose_type()
-    debug(players_data[session.get("id")]["player"].type)
+    debug(players_data[player_id]["player"].type)
     rooms[room]["status"] = "started"
     debug("Start Game")
     debug(f"player_data:\n{players_data}")

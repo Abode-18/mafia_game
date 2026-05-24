@@ -20,27 +20,7 @@
 <script type="text/javascript">
    const sockit = io()
    const name = document.getElementById("name-input")
-   let player_id = localStorage.getItem("player_id");
-   function generateUUID() {
-   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-   });
-}
 
-   if (!player_id) {
-      player_id = generateUUID()
-      localStorage.setItem("player_id", player_id);
-   }
-   set_identity()
-   async function set_identity() {
-         await fetch ('/set_identity' , {
-         method : 'POST',
-         headers: {'Content-Type': 'application/json'},
-         body: JSON.stringify({ 'player_id': player_id })
-   })  
-   };
 
    function showError(message){
       const bar = document.getElementById("error-bar");
@@ -61,7 +41,6 @@
       };
 
       sockit.emit("create-room", {
-         "player_id":player_id,
          "name":name.value,
       });
    }
@@ -85,7 +64,6 @@
 
 
       sockit.emit("join-room", {
-         "player_id":player_id,
          "name":name.value,
          "room":room.value
       });
