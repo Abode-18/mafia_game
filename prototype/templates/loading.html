@@ -1,6 +1,10 @@
+<body>
+    <h1>LOADING ...</h1>
+</body>
+
 <script>
-    let player_id = localStorage.getItem("player_id");
-    function generateUUID() {
+   let player_id = localStorage.getItem("player_id");
+   function generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         const r = Math.random() * 16 | 0;
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -14,17 +18,24 @@
    }
 
 
-   async function set_identity() {
+   async function set_identity(url) {
          await fetch ('/set_identity' , {
          method : 'POST',
          headers: {'Content-Type': 'application/json'},
          body: JSON.stringify({ 'player_id': player_id })
    });
-   window.location.replace("/");
+   window.location.replace(url);
    };
-   set_identity()
 </script>
 
-<body>
-    <h1>LOADING ...</h1>
-</body>
+{% if room %}
+<script>
+   set_identity("/?room={{ room }}")
+</script>
+{% else %}
+<script>
+   set_identity("/")
+</script>
+{% endif %}
+
+

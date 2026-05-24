@@ -98,4 +98,9 @@
 
 
 </script>
+{% if room %}
+   <script>
+      document.getElementById("room").value = "{{room}}";
+   </script>
+{% endif %}
 {% endblock content %}

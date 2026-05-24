@@ -65,6 +65,9 @@
     sockit.on("success",(data) =>{
         showSuccess(data.message)
     });
+    sockit.on("started",(data)=>{
+        document.body.innerHTML = `<h1>you Are a ${data["type"]}`
+    })
     sockit.on("player-joined",(data) =>{
         console.log("player joined")
         showPlayer(data.players)
