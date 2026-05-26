@@ -9,18 +9,32 @@ class GameState:
 
     def choose_type(self):
         Players = self.players
-        num_of_players = len(Players)
-        types = ["mafia","doctor","citizen"]
-        record = {"mafia":0,"doctor":0,"citizen":0}
-        for player in Players.values():
-            player.type = random.choice(types)
-            record[player.type] += 1
-            if record["mafia"] >= 2:
-                if "mafia" in types:
-                    types.remove("mafia")
-            if record["doctor"] >= 1:
-                if "doctor" in types:
-                    types.remove("doctor")
+        ids = list(Players.keys())
+        num_of_players = len(ids)
+
+        if num_of_players >= 6:
+            mafia_num = 2
+        else:mafia_num=1
+
+        mafia_ids = random.sample(ids,mafia_num)
+        remaining = [id for id in ids if id not in mafia_ids]
+        
+        doctor_id = random.choice(remaining)
+        remaining.remove(doctor_id)
+
+        elder_id = random.choice(remaining)
+        remaining.remove(elder_id)
+
+        for id in ids:
+            if id in mafia_ids:
+                Players[id].type = "mafia"
+            elif id == doctor_id:
+                Players[id].type = "doctor"
+            elif id == elder_id:
+                Players[id].type = "elder"
+            else:
+                Players[id].type = "citizen"
+
         self.players = Players
         return 
     

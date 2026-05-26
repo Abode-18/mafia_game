@@ -22,6 +22,7 @@
     const messages = document.getElementById("#messages");
     const sockit = io();
     sockit.emit("room-page-joined")
+    let player_id
 
     const showPlayer = (players) =>{
         const ul = document.querySelector(".players ul");
@@ -59,8 +60,13 @@
     },10000);
 }
 
+    function ready(){
+        sockit.emit("ready")
+    }
+
     sockit.on("player_id",(data) =>{
-        let player_id = data.data
+        player_id = data.data
+        console.log(player_id)
     })
 
 
@@ -82,6 +88,7 @@
         console.log(player_id)
         console.log(data[player_id])
         document.body.innerHTML = `<h1>you Are a ${data[player_id]}`
+        document.addEventListener("click",ready)
     })
 </script>
 {% endblock content %}

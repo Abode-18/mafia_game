@@ -37,7 +37,7 @@ def set_identity():
         session["player_id"] = player_id
         session.permanent = True
         players_data[player_id] = {
-            "player": Player(player_id, None, None),
+            "player": Player(player_id, None, None,0),
             "room": None
         }
         debug(players_data)
@@ -170,7 +170,7 @@ def success_messages():
     room = players_data.get(player_id).get("room")
     is_host = rooms[room].get("host") == player_id
     if rooms[room].get("status") == "started":
-        socketio.emit("started",{"type":players_data[player_id]["player"].type})
+        emit("started",{"type":players_data[player_id]["player"].type})
         return
     join_room(room) 
     emit("success",{"message":f"you have joined the room: {room} successfully."})
@@ -184,8 +184,8 @@ def success_messages():
 def Start_game():
     player_id = session.get("player_id")
     room = players_data.get(player_id).get("room")
-    if len(rooms[room]["players"]) <1:
-        socketio.emit("error",{"message":"the number of players must be more then 4 players"})
+    if len(rooms[room]["players"]) <4:
+        emit("error",{"message":"the number of players must be more then 4 players"})
         return
 
     rooms[room]["game"] = GameState(rooms[room]["players"])
@@ -196,7 +196,16 @@ def Start_game():
     debug(f"player_data:\n{players_data}")
     debug(f"rooms:\n{rooms}")
     debug(f"{rooms[room]["players"] == rooms[room]["game"].players}")
-    socketio.emit("Game-on",{p.id:p.type for p in rooms[room]["game"].players.values()},to=room)
+    emit("Game-on",{p.id:p.type for p in rooms[room]["game"].players.values()},to=room)
+
+# here
+@socketio.on("ready")
+def next_round():
+    id = set_identity()
+    players_data[id]["player"].round +=1
+    room = players_data[id]["player"]["room"]
+    if all(obj.round == rooms["room"]["players"][0].round for obj in rooms["room"]["players"]):
+        rooms[room]["game"].round +=1
 
 
 
