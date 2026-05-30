@@ -61,6 +61,7 @@
 }
 
     function ready(){
+        console.log("ready")
         sockit.emit("ready")
     }
 
@@ -87,8 +88,13 @@
     sockit.on("Game-on",(data) => {
         console.log(player_id)
         console.log(data[player_id])
-        document.body.innerHTML = `<h1>you Are a ${data[player_id]}`
+        document.body.innerHTML = `<h1>you Are a ${data[player_id]}</h1>
+        <p>click on the screen if you are ready</p>`
         document.addEventListener("click",ready)
+    })
+
+    sockit.on("round_start",(data) =>{
+        document.body.innerHTML = `<h1>Round ${data["round"]} Started`
     })
 </script>
 {% endblock content %}

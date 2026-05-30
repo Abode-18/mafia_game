@@ -3,7 +3,7 @@ import random
 class GameState:
     def __init__(self,players:dict[str,Player]):
         self.players:dict[str,Player] = {p.id:p for p in players.values()}
-        self.round = 1
+        self.round = 0
         self.moves = {}
         self.number_of_citizense = len([p.id for p in players.values() if p.type == "citizense"])
 
@@ -59,6 +59,11 @@ class GameState:
             return self.resolve_round()
         return "hand the phone to the next player",0
     def resolve_round(self):
+        if self.round <1:
+            self.round = 1
+            for p in self.players.values():
+                p.round = 1
+            return
         rescued_player = None
         for player_id,move in self.moves.items():
             actor = self.players[player_id]

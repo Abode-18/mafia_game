@@ -54,7 +54,7 @@ def index():
 
 
     room = request.args.get("room")
-    #here
+
 
     player_data = players_data[p_id]
     player = player_data["player"]
@@ -169,14 +169,21 @@ def success_messages():
     player_id = set_identity()
     room = players_data.get(player_id).get("room")
     is_host = rooms[room].get("host") == player_id
+    emit("player_id",{"data":player_id})
+    debug(f"round: {rooms[room].get("game",GameState({"id":Player(None,None,None,None)})).round}")
+    #here
     if rooms[room].get("status") == "started":
-        emit("started",{"type":players_data[player_id]["player"].type})
-        return
+        if rooms[room]["game"].round ==0:
+            debug(f"types:{[p.type for p in rooms[room]["game"].players.values()]}")
+            emit("Game-on",{p.id:p.type for p in rooms[room]["game"].players.values()})
+            return
+        else:
+            emit("round_start",{"round":rooms[room]["game"].round})
     join_room(room) 
     emit("success",{"message":f"you have joined the room: {room} successfully."})
     # debug(rooms)
     # debug(f"players:\n{[rooms[room]["players"][id].name for id in rooms[room]["players"].keys()]}")
-    emit("player_id",{"data":player_id})
+    
     emit("player-joined",{"players":[rooms[room]["players"][id].name for id in rooms[room]["players"].keys()]},to=room)
 
 
@@ -198,14 +205,17 @@ def Start_game():
     debug(f"{rooms[room]["players"] == rooms[room]["game"].players}")
     emit("Game-on",{p.id:p.type for p in rooms[room]["game"].players.values()},to=room)
 
-# here
+
 @socketio.on("ready")
 def next_round():
     id = set_identity()
-    players_data[id]["player"].round +=1
-    room = players_data[id]["player"]["room"]
-    if all(obj.round == rooms["room"]["players"][0].round for obj in rooms["room"]["players"]):
-        rooms[room]["game"].round +=1
+    room = players_data[id]["room"]
+    if not rooms[room].get("players_ready"):
+        rooms[room]["players_ready"] = []
+    rooms[room]["players_ready"].append(id)
+    if sorted(list(rooms[room]["players"].keys())) == sorted(rooms[room]["players_ready"]):
+        rooms[room]["game"].round += 1
+        emit("round_start",{"round":rooms[room]["game"].round},to=room)
 
 
 
