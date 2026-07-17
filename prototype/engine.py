@@ -58,12 +58,18 @@ class GameState:
         if len(self.moves) == len(self.players) - self.number_of_citizense:
             return self.resolve_round()
         return "hand the phone to the next player",0
+    
     def resolve_round(self):
         if self.round <1:
             self.round = 1
             for p in self.players.values():
                 p.round = 1
-            return
+            players = {}
+            for id in self.players.keys():
+                players[id] = self.avalible_players(id)
+            return {"msg":"Round 1 Started","vote":0,"players":players}
+        
+        
         rescued_player = None
         for player_id,move in self.moves.items():
             actor = self.players[player_id]
@@ -82,6 +88,17 @@ class GameState:
         print(f"{player_killed} was killed by the mafia.... but the doctor rescued him")
         return self.voting()
     
+    def avalible_players(self,player_id:str):
+        a_players = {}
+        if self.players[player_id].type == "citizen":
+            return a_players
+        else:
+            for player in self.players.values():
+                if player.type == self.players[player_id]:
+                    continue
+                else:
+                    a_players[player.id] = {"name":player.name,"id":player.id}
+        return sorted(a_players)
     
     def voting(self):
         votes = []

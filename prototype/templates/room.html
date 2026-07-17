@@ -3,29 +3,83 @@
 {% block content %}
 <div id="success-bar"></div>
 <div id="error-bar" >Something went wrong</div>
-<h2>Room {{room}}</h2>
 
-<div class="players">
+
+<div id="players">
+    <h2>Room {{room}}</h2>
     <ul>
 
     </ul>
-</div>
-
 {% if is_host %}
 
-<div class="start_game" onclick="Start_game()">
-    Start Game
-</div>
+    <div class="start_game" onclick="Start_game()">
+        Start Game
+    </div>
 
 {% endif %}
+</div>
+
+
+<h1 id="msg"></h1>
+<p id="click"></p>
+<div class="container" id="players-select">
+
+    <h2>Select a Player</h2>
+    <h3></h3>
+
+    <!-- Add players here using JS -->
+    <div id="player-list"></div>
+
+    <button id="continue-btn">Continue</button>
+
+</div>
+
+
 <script type="text/javascript">
+    let player_selected
     const messages = document.getElementById("#messages");
     const sockit = io();
     sockit.emit("room-page-joined")
     let player_id
 
+    const playerList = document.getElementById("player-list");
+
+    function addPlayer(name, info = "",id) {
+        const player = document.createElement("div");
+        player.className = "player";
+
+        player.innerHTML = `
+            <div class="player-name">${name}</div>
+            <div class="player-info">${info}</div>
+        `;
+
+        player.addEventListener("click", () => {
+            // Remove selection from all players
+            document.querySelectorAll(".player").forEach(p => {
+                p.classList.remove("selected");
+            });
+
+            // Select clicked player
+            player.classList.add("selected");
+
+            // Run your function
+            playerSelected(id);
+        });
+
+        playerList.appendChild(player);
+    }
+
+    function playerSelected(playerId) {
+        player_selected = playerId
+        sockit.emit("temp-selection",{"selection":playerId})
+        console.log("Selected:", playerId);
+    }
+
+    // Example players
+
+
     const showPlayer = (players) =>{
-        const ul = document.querySelector(".players ul");
+        const ul = document.querySelector("#players ul");
         ul.innerHTML = "";
         for (player of players){
             let li = document.createElement("li");
@@ -61,10 +115,19 @@
 }
 
     function ready(){
-        console.log("ready")
-        sockit.emit("ready")
+        console.log("ready");
+        sockit.emit("ready");
+        document.removeEventListener("click", ready);
     }
 
+    // function submit_move(){
+    //     if (!player_selected){
+    //         showError("select a player")
+
+    //     } else {
+    //         sockit.
+    //     }
+    // }
     sockit.on("player_id",(data) =>{
         player_id = data.data
         console.log(player_id)
@@ -78,7 +141,7 @@
         showSuccess(data.message)
     });
     sockit.on("started",(data)=>{
-        document.body.innerHTML = `<h1>you Are a ${data["type"]}`
+        document.getElementById("msg").innerHTML = `you Are a ${data["type"]}`
     })
     sockit.on("player-joined",(data) =>{
         console.log("player joined")
@@ -88,13 +151,50 @@
     sockit.on("Game-on",(data) => {
         console.log(player_id)
         console.log(data[player_id])
-        document.body.innerHTML = `<h1>you Are a ${data[player_id]}</h1>
-        <p>click on the screen if you are ready</p>`
+        document.getElementById("players").style.display = 'none'
+        document.getElementById("msg").innerHTML = `you Are a ${data[player_id]}`;
+        document.getElementById("click").innerHTML=`click on the screen if you are ready`
         document.addEventListener("click",ready)
     })
 
-    sockit.on("round_start",(data) =>{
-        document.body.innerHTML = `<h1>Round ${data["round"]} Started`
+    sockit.on("round_end",(data) =>{
+        console.log(document.getElementById("msg"))
+        document.getElementById("msg").innerHTML = `${data["msg"]}`
+        console.log(data["types"][player_id])
+        if (data["types"][player_id]=="citizen"){
+            let p = document.getElementById("click")
+            p.textContent = "Click on the screen to continue"
+            document.addEventListener("click",ready)
+        }else{
+            const continue_btn = document.querySelector("#continue-btn")
+            console.log(continue_btn)
+            // continue_btn.addEventListener("click",submit_move)
+            
+            if(data["types"][player_id]=="mafia"){
+                document.querySelector(".container h2").textContent = "choose the player you want to Eliminate";
+            }
+            if(data["types"][player_id]=="doctor"){
+                document.querySelector(".container h2").textContent = "choose the player you want to Protect";
+            }
+            if(data["types"][player_id]=="elder"){
+                document.querySelector(".container h2").textContent = "choose the player you want to Ask about";
+            }
+            document.getElementById("msg").style.display = 'none'
+            document.getElementById("click").style.display = 'none'
+            document.getElementById("players-select").style.display = "block"
+            console.log("h2")
+            // here
+            i = 0
+            for (const player of data["players"][player_id]){
+                i++;
+                addPlayer(player["name"], "Level 15 Mage",player["id"]);
+            } 
+        }
+    })
+    sockit.on("partner-selection",(data) => {
+        console.log(data["selection"])
+        let h3 = document.querySelector(".container h3");
+        h3.textContent = `Your partner selection: ${data["selection"]}`
     })
 </script>
 {% endblock content %}

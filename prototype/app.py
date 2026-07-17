@@ -50,34 +50,18 @@ def set_identity():
 def index():
     set_identity()
     p_id = session.get("player_id")
-
-
-
     room = request.args.get("room")
-
-
     player_data = players_data[p_id]
     player = player_data["player"]
-
-    # update name if provided
-
-
     current_room = player_data.get("room")
-
-    # redirect if already in room and has name
     if current_room and player.name:
         return redirect(url_for("room", room=current_room))
-
-    # render with room if joining one
     if current_room and not player.name:
         return render_template("home.html", room=current_room)
-
     if room and not player.name:
         return render_template("home.html", room=room)
-
     if player.name:
         return render_template("home.html", name=player.name)
-
     debug("home page:")
     debug(f"player_data:\n{players_data}")
     debug(f"rooms:\n{rooms}")
@@ -171,7 +155,7 @@ def success_messages():
     is_host = rooms[room].get("host") == player_id
     emit("player_id",{"data":player_id})
     debug(f"round: {rooms[room].get("game",GameState({"id":Player(None,None,None,None)})).round}")
-    #here
+   
     if rooms[room].get("status") == "started":
         if rooms[room]["game"].round ==0:
             debug(f"types:{[p.type for p in rooms[room]["game"].players.values()]}")
@@ -194,7 +178,7 @@ def Start_game():
     if len(rooms[room]["players"]) <4:
         emit("error",{"message":"the number of players must be more then 4 players"})
         return
-
+    rooms[room]["mafia_sid"] = []
     rooms[room]["game"] = GameState(rooms[room]["players"])
     rooms[room]["game"].choose_type()
     debug(players_data[player_id]["player"].type)
@@ -208,16 +192,37 @@ def Start_game():
 
 @socketio.on("ready")
 def next_round():
+    #here
+    debug("next_round")
+    sid = request.sid
+    debug(sid)
     id = set_identity()
     room = players_data[id]["room"]
+    if players_data[id]["player"].type == 'mafia':
+        rooms[room]["mafia_sid"].append(sid)
     if not rooms[room].get("players_ready"):
         rooms[room]["players_ready"] = []
     rooms[room]["players_ready"].append(id)
     if sorted(list(rooms[room]["players"].keys())) == sorted(rooms[room]["players_ready"]):
-        rooms[room]["game"].round += 1
-        emit("round_start",{"round":rooms[room]["game"].round},to=room)
+        result = rooms[room]["game"].resolve_round()
+        if result["vote"]:
+            emit("voting",{"players":{id:p.name for id,p in rooms[room]["game"].players.keys()}})
+        debug({"msg":result["msg"],"players":result["players"]})
+        emit("round_end",{"msg":result["msg"],"players":result["players"],"types":{p.id:p.type for p in rooms[room]["game"].players.values()}},to=room)
 
-
+@socketio.on("temp-selection")
+def temp_selection(player_id):
+    # here
+    id = set_identity()
+    sid = request.sid
+    room = players_data[id]["room"]
+    debug(rooms[room]["mafia_sid"])
+    if len(rooms[room]["mafia_sid"]) <1:
+        if players_data[id]["player"].type == "mafia":
+            partner_sid = next(x for x in rooms[room]["mafia_sid"] if x != sid)
+            debug("selection:")
+            debug(rooms[room]["players"][player_id]["player"].name)
+            emit("partner-selection",{"selection":rooms[room]["players"][player_id]["player"].name},to=partner_sid)
 
 # @socketio.on("join")
 # def join():
