@@ -52,6 +52,11 @@
             <div class="player-name">${name}</div>
             <div class="player-info">${info}</div>
         `;
+        player.Data = {
+            "id":id,
+        };
+        console.log("Object_data",player.Data["id"]);
+
 
         player.addEventListener("click", () => {
             // Remove selection from all players
@@ -63,7 +68,7 @@
             player.classList.add("selected");
 
             // Run your function
-            playerSelected(id);
+            playerSelected(player.Data["id"]);
         });
 
         playerList.appendChild(player);
@@ -183,11 +188,15 @@
             document.getElementById("click").style.display = 'none'
             document.getElementById("players-select").style.display = "block"
             console.log("h2")
-            // here
+            console.log("player_id: ",player_id)
+            console.log(data["players"])
+            
             i = 0
-            for (const player of data["players"][player_id]){
+            for (const player of Object.keys(data["players"][player_id])){
+                console.log(player)
+                console.log(data["players"][player_id][player]["name"])
                 i++;
-                addPlayer(player["name"], "Level 15 Mage",player["id"]);
+                addPlayer(data["players"][player_id][player]["name"], "Level 15 Mage",data["players"][player_id][player]["id"]);
             } 
         }
     })

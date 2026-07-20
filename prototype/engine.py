@@ -98,7 +98,8 @@ class GameState:
                     continue
                 else:
                     a_players[player.id] = {"name":player.name,"id":player.id}
-        return sorted(a_players)
+        
+        return dict(sorted(a_players.items()))
     
     def voting(self):
         votes = []

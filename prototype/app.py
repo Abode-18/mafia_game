@@ -216,8 +216,9 @@ def temp_selection(player_id):
     id = set_identity()
     sid = request.sid
     room = players_data[id]["room"]
+    debug(f"player_id: {player_id}")
     debug(rooms[room]["mafia_sid"])
-    if len(rooms[room]["mafia_sid"]) <1:
+    if len(rooms[room]["mafia_sid"]) >1:
         if players_data[id]["player"].type == "mafia":
             partner_sid = next(x for x in rooms[room]["mafia_sid"] if x != sid)
             debug("selection:")
