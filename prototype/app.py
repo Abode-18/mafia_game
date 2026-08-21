@@ -213,6 +213,7 @@ def next_round():
 @socketio.on("temp-selection")
 def temp_selection(player_id):
     # here
+    selection_id =player_id["selection"]
     id = set_identity()
     sid = request.sid
     room = players_data[id]["room"]
@@ -222,8 +223,8 @@ def temp_selection(player_id):
         if players_data[id]["player"].type == "mafia":
             partner_sid = next(x for x in rooms[room]["mafia_sid"] if x != sid)
             debug("selection:")
-            debug(rooms[room]["players"][player_id]["player"].name)
-            emit("partner-selection",{"selection":rooms[room]["players"][player_id]["player"].name},to=partner_sid)
+            debug(rooms[room]["players"][selection_id].name)
+            emit("partner-selection",{"selection":rooms[room]["players"][selection_id].name},to=partner_sid)
 
 # @socketio.on("join")
 # def join():

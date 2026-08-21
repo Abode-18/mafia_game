@@ -94,7 +94,7 @@ class GameState:
             return a_players
         else:
             for player in self.players.values():
-                if player.type == self.players[player_id]:
+                if player.type == self.players[player_id].type:
                     continue
                 else:
                     a_players[player.id] = {"name":player.name,"id":player.id}
