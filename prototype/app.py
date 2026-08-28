@@ -211,20 +211,40 @@ def next_round():
         emit("round_end",{"msg":result["msg"],"players":result["players"],"types":{p.id:p.type for p in rooms[room]["game"].players.values()}},to=room)
 
 @socketio.on("temp-selection")
-def temp_selection(player_id):
+def temp_selection(data):
     # here
-    selection_id =player_id["selection"]
+    selection_id =data["selection"]
     id = set_identity()
     sid = request.sid
     room = players_data[id]["room"]
-    debug(f"player_id: {player_id}")
+    if not data["color"]:color = "red" 
+    else: color = data["color"]
+    debug(f"player_id: {data}")
     debug(rooms[room]["mafia_sid"])
     if len(rooms[room]["mafia_sid"]) >1:
         if players_data[id]["player"].type == "mafia":
             partner_sid = next(x for x in rooms[room]["mafia_sid"] if x != sid)
             debug("selection:")
             debug(rooms[room]["players"][selection_id].name)
-            emit("partner-selection",{"selection":rooms[room]["players"][selection_id].name},to=partner_sid)
+            emit("partner-selection",{"selection":rooms[room]["players"][selection_id].name,"color":color},to=partner_sid)
+
+
+socketio.on("submit_move")
+def submit_move(data):
+    player_id = data["id"]
+    target_id = data["target_id"]
+    if room[room][player_id]["player"].type == "mafia":
+        if not rooms[room].get("temp_selection"):
+            rooms[room]["temp_selection"] = target_id
+        else:
+            if rooms[room]["temp_selection"] == target_id:
+                move = Move(player_id,target_id)
+                response = rooms[room]["game"].submit_move(move)
+    else:
+        #here
+        pass
+
+
 
 # @socketio.on("join")
 # def join():

@@ -41,6 +41,7 @@
     const sockit = io();
     sockit.emit("room-page-joined")
     let player_id
+    let target_id
 
     const playerList = document.getElementById("player-list");
 
@@ -75,7 +76,7 @@
     }
 
     function playerSelected(playerId) {
-        player_selected = playerId
+        target_id = playerId
         sockit.emit("temp-selection",{"selection":playerId})
         console.log("Selected:", playerId);
     }
@@ -173,7 +174,7 @@
         }else{
             const continue_btn = document.querySelector("#continue-btn")
             console.log(continue_btn)
-            // continue_btn.addEventListener("click",submit_move)
+            continue_btn.addEventListener("click",submit_move)
             
             if(data["types"][player_id]=="mafia"){
                 document.querySelector(".container h2").textContent = "choose the player you want to Eliminate";
@@ -205,6 +206,11 @@
         let h3 = document.querySelector(".container h3");
         h3.textContent = `Your partner selection: ${data["selection"]}`
     })
+
+    function submit_move(){
+        console.log(`submit_move: id: ${player_id}, target_id: ${target_id}`)
+        sockit.emit("submit_move",{"id":player_id,"target_id":target_id})
+    }
 </script>
 {% endblock content %}
 

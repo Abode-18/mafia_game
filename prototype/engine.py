@@ -40,9 +40,9 @@ class GameState:
     
     def submit_move(self,move:Move):
         if not(move.target in [p for p in self.players.keys()]):
-            return f"{move.target} is dead",0
+            return {"valid":0,"message":"the player does not exist"}
         if move.player_id in self.moves:
-            return "you already played",0
+            return {"valid":0,"message":"you have already played"}
         if self.players[move.player_id].type == "elder":
             self.moves[move.player_id] = {
                 "target":move.target
