@@ -39,6 +39,7 @@ class GameState:
         return 
     
     def submit_move(self,move:Move):
+        #Here
         if not(move.target in [p for p in self.players.keys()]):
             return {"valid":0,"message":"the player does not exist"}
         if move.player_id in self.moves:
@@ -56,7 +57,7 @@ class GameState:
                 "target":move.target
             }
         if len(self.moves) == len(self.players) - self.number_of_citizense:
-            return self.resolve_round()
+            return {"valid":2,"message":"disscus with the rest of the players"}
         return "hand the phone to the next player",0
     
     def resolve_round(self):

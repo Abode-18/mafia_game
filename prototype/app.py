@@ -162,7 +162,8 @@ def success_messages():
             emit("Game-on",{p.id:p.type for p in rooms[room]["game"].players.values()})
             return
         else:
-            emit("round_start",{"round":rooms[room]["game"].round})
+            # emit("round_start",{"round":rooms[room]["game"].round})
+            pass
     join_room(room) 
     emit("success",{"message":f"you have joined the room: {room} successfully."})
     # debug(rooms)
@@ -208,7 +209,7 @@ def next_round():
         if result["vote"]:
             emit("voting",{"players":{id:p.name for id,p in rooms[room]["game"].players.keys()}})
         debug({"msg":result["msg"],"players":result["players"]})
-        emit("round_end",{"msg":result["msg"],"players":result["players"],"types":{p.id:p.type for p in rooms[room]["game"].players.values()}},to=room)
+        emit("round_start",{"msg":result["msg"],"players":result["players"],"types":{p.id:p.type for p in rooms[room]["game"].players.values()}},to=room)
 
 @socketio.on("temp-selection")
 def temp_selection(data):
@@ -236,13 +237,29 @@ def submit_move(data):
     if room[room][player_id]["player"].type == "mafia":
         if not rooms[room].get("temp_selection"):
             rooms[room]["temp_selection"] = target_id
+            emit("cancel_btn")
         else:
             if rooms[room]["temp_selection"] == target_id:
                 move = Move(player_id,target_id)
                 response = rooms[room]["game"].submit_move(move)
-    else:
-        #here
+                if not response["valid"]:
+                    emit("error",{"message":response["message"]})
+                elif response["valid"] == 2:
+                    emit("round_end",{"message":response["message"]},to=room)
+                else:
+                    for mafia in rooms[room]["mafia_sid"]:
+                        emit("wait",{"message":"waiting for other players to be ready"},to=mafia)
+    elif room[player_id]["player"].type == "elder":
+        move = Move(player_id,target_id)
+        response = rooms[room]["game"].submit_move(move)
+        if not response["valid"]:
+            emit("error",{"message":response["message"]})
+        elif response["valid"] == 2:
+            emit("round_end",{"message":response["message"]},to=room)
+        else:
+            emit("wait",{"message":"waiting for other players to be ready"})
         pass
+
 
 
 

@@ -163,7 +163,7 @@
         document.addEventListener("click",ready)
     })
 
-    sockit.on("round_end",(data) =>{
+    sockit.on("round_start",(data) =>{
         console.log(document.getElementById("msg"))
         document.getElementById("msg").innerHTML = `${data["msg"]}`
         console.log(data["types"][player_id])
@@ -211,6 +211,18 @@
         console.log(`submit_move: id: ${player_id}, target_id: ${target_id}`)
         sockit.emit("submit_move",{"id":player_id,"target_id":target_id})
     }
+
+    sockit.on("cancel_btn",() => {
+        console.log("cancel_btn")
+    })
+    
+    sockit.on("wait",() => {
+        console.log("wait")
+    })
+
+    sockit.on("round_end",() => {
+        console.log("cancel_btn")
+    })
 </script>
 {% endblock content %}
 
