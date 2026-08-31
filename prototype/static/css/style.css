@@ -144,7 +144,7 @@ h2 {
     display: block;
 }
 
-#continue-btn {
+.btn {
     width: 100%;
     margin-top: 15px;
     padding: 12px;
@@ -155,7 +155,10 @@ h2 {
     font-size: 1rem;
     cursor: pointer;
 }
-
+#cancel_btn {
+    background: #f02828;
+    display: none;
+}
 #continue-btn:hover {
     opacity: 0.9;
 }

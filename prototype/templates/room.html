@@ -30,8 +30,8 @@
     <!-- Add players here using JS -->
     <div id="player-list"></div>
 
-    <button id="continue-btn">Continue</button>
-
+    <button class="btn" id="continue_btn">Continue</button>
+    <button class="btn" id="cancel_btn">Cancel</button>
 </div>
 
 
@@ -172,7 +172,7 @@
             p.textContent = "Click on the screen to continue"
             document.addEventListener("click",ready)
         }else{
-            const continue_btn = document.querySelector("#continue-btn")
+            const continue_btn = document.querySelector("#continue_btn")
             console.log(continue_btn)
             continue_btn.addEventListener("click",submit_move)
             
@@ -208,21 +208,37 @@
     })
 
     function submit_move(){
-        console.log(`submit_move: id: ${player_id}, target_id: ${target_id}`)
+        console.log(`submit_move: id: ${player_id}, target_id: ${target_id}`);
         sockit.emit("submit_move",{"id":player_id,"target_id":target_id})
     }
 
     sockit.on("cancel_btn",() => {
-        console.log("cancel_btn")
+        console.log("cancel_btn");
+        let cancel_btn = document.getElementById("cancel_btn");
+        let continue_btn = document.getElementById("continue_btn");
+        cancel_btn.style.display = "block";
+        continue_btn.style.display = "none";
+        cancel_btn.addEventListener("click",cancel);
     })
     
+    function cancel(){
+        sockit.emit("cancel_temp")
+        let cancel_btn = document.getElementById("cancel_btn");
+        let continue_btn = document.getElementById("continue_btn");
+        cancel_btn.style.display = "none";
+        continue_btn.style.display = "block";
+        // continue_btn.addEventListener("click")
+    }
+
     sockit.on("wait",() => {
         console.log("wait")
     })
 
     sockit.on("round_end",() => {
-        console.log("cancel_btn")
+        console.log("round_end")
     })
+
+
 </script>
 {% endblock content %}
 

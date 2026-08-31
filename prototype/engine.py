@@ -58,7 +58,7 @@ class GameState:
             }
         if len(self.moves) == len(self.players) - self.number_of_citizense:
             return {"valid":2,"message":"disscus with the rest of the players"}
-        return "hand the phone to the next player",0
+        return {"valid":1}
     
     def resolve_round(self):
         if self.round <1:

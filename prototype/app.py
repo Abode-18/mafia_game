@@ -193,7 +193,7 @@ def Start_game():
 
 @socketio.on("ready")
 def next_round():
-    #here
+    
     debug("next_round")
     sid = request.sid
     debug(sid)
@@ -213,13 +213,13 @@ def next_round():
 
 @socketio.on("temp-selection")
 def temp_selection(data):
-    # here
+    
     selection_id =data["selection"]
     id = set_identity()
     sid = request.sid
     room = players_data[id]["room"]
-    if not data["color"]:color = "red" 
-    else: color = data["color"]
+    # if not data["color"]:color = "red" 
+    # else: color = data["color"]
     debug(f"player_id: {data}")
     debug(rooms[room]["mafia_sid"])
     if len(rooms[room]["mafia_sid"]) >1:
@@ -227,18 +227,23 @@ def temp_selection(data):
             partner_sid = next(x for x in rooms[room]["mafia_sid"] if x != sid)
             debug("selection:")
             debug(rooms[room]["players"][selection_id].name)
-            emit("partner-selection",{"selection":rooms[room]["players"][selection_id].name,"color":color},to=partner_sid)
+            emit("partner-selection",{"selection":rooms[room]["players"][selection_id].name},to=partner_sid)
 
 
-socketio.on("submit_move")
+@socketio.on("submit_move")
 def submit_move(data):
+    debug("submitting_move")
     player_id = data["id"]
+    room = players_data.get(player_id).get("room")
     target_id = data["target_id"]
-    if room[room][player_id]["player"].type == "mafia":
+    if rooms[room]["players"][player_id].type == "mafia":
+        debug("is_mafia")
         if not rooms[room].get("temp_selection"):
+            debug("temp selection")
             rooms[room]["temp_selection"] = target_id
             emit("cancel_btn")
         else:
+            debug("Selection complete")
             if rooms[room]["temp_selection"] == target_id:
                 move = Move(player_id,target_id)
                 response = rooms[room]["game"].submit_move(move)
@@ -249,6 +254,8 @@ def submit_move(data):
                 else:
                     for mafia in rooms[room]["mafia_sid"]:
                         emit("wait",{"message":"waiting for other players to be ready"},to=mafia)
+            else:
+                emit("error",{"message":"you and your partner have to choose the same person son son son"})
     elif room[player_id]["player"].type == "elder":
         move = Move(player_id,target_id)
         response = rooms[room]["game"].submit_move(move)
@@ -257,9 +264,15 @@ def submit_move(data):
         elif response["valid"] == 2:
             emit("round_end",{"message":response["message"]},to=room)
         else:
-            emit("wait",{"message":"waiting for other players to be ready"})
-        pass
+            #HERE
+            pass
 
+@socketio.on("cancel_temp")
+def cancel():
+    debug("cancel_temp")
+    id = set_identity()
+    room = players_data[id]["room"]
+    rooms[room]["temp_selection"] = ''
 
 
 
